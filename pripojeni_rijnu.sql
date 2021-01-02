@@ -28,3 +28,19 @@ union
      from tsk_measurments_upper
    		where measured_from>='2020-08-01 00:00:00'
    		and measured_to<='2020-09-30 23:59:59');
+		
+--- Vybereme jen merice, ktere potrebujeme
+create or replace table filtered_measurements AS
+select detector_id
+               , measured_from::TIMESTAMP_NTZ as measured_from
+               , measurement_type
+               , class_id
+               , value
+          from july_oct
+          where measured_from::TIMESTAMP_NTZ >= '2020-08-01 00:00:00'
+            and measured_to::TIMESTAMP_NTZ <= '2020-10-31 23:59:59'
+            and ((measurement_type = 'count' and VALUE <= 160)
+              or (measurement_type = 'speed' and VALUE <= 130))
+            and measurement_type != 'occupancy'
+            and detector_id in (select distinct detector_id from selected_detector)
+;
